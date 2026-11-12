@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chaos Engineering Kill Switch</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">⌁</span><div><b>CHAOS CONTROL</b><small>Kill Switch Dashboard</small></div></div>
+    <nav>
+      <a class="active" href="#dashboard">▦ &nbsp; Dashboard</a>
+      <a href="#architecture">⌘ &nbsp; Architecture</a>
+      <a href="#activity">≋ &nbsp; Activity</a>
+    </nav>
+    <div class="side-foot">LOCAL DEVELOPMENT<br><span>Region: us-east-1</span></div>
+  </aside>
+
+  <main>
+    <header>
+      <div><div class="eyebrow">CLOUD OPERATIONS / PROJECT 48</div><h1>Chaos Engineering Kill Switch</h1><p>Trigger failure deliberately. Observe automatic recovery.</p></div>
+      <div class="top-status"><span class="pulse"></span><span id="connection">Connecting to AWS…</span><button class="secondary" onclick="refreshStatus()">↻ Refresh</button></div>
+    </header>
+
+    <section class="warning"><b>Real AWS controls enabled</b><span>Triggering the switch invokes your actual Lambda function. It may stop or terminate an EC2 instance and can incur AWS charges. Verify the Lambda target before using it.</span></section>
+
+    <section id="dashboard" class="cards">
+      <article class="metric"><div class="metric-head"><span>Auto Scaling Group</span><span class="icon purple">⌘</span></div><h2 id="asg-name">CHAOS-HEALING-ASG</h2><div class="big-number" id="capacity">— / —</div><div class="muted">Healthy instances / desired capacity</div><div id="asg-status" class="pill">Loading</div></article>
+      <article class="metric"><div class="metric-head"><span>EC2 instances</span><span class="icon blue">▣</span></div><div class="big-number" id="instance-count">—</div><div class="muted">Instances currently in this ASG</div><div id="instance-state" class="sub-lines">Fetching instance status…</div></article>
+      <article class="metric"><div class="metric-head"><span>CloudWatch alarm</span><span class="icon pink">◉</span></div><h2 id="alarm-name">CHAOS-HEALING-ASG-STATUSCHECK</h2><div id="alarm-state" class="big-number">—</div><div id="alarm-detail" class="muted">Loading alarm details…</div></article>
+    </section>
+
+    <section class="grid">
+      <article class="panel switch-panel">
+        <div class="panel-title"><div><div class="eyebrow">MANUAL CONTROL</div><h2>Virtual Kill Switch</h2></div><span class="icon red">ϟ</span></div>
+        <p>This button replaces the physical toggle switch for the website demonstration. It calls the backend, which invokes <code>chaos-kill-switch</code>.</p>
+        <div class="switch-visual"><div class="switch-track"><div class="switch-knob" id="switch-knob"></div></div><span id="switch-label">STANDBY</span></div>
+        <button class="danger-button" id="trigger-button" onclick="openConfirm()">ϟ &nbsp; Trigger Kill Switch</button>
+        <div class="micro-warning">Only click after checking the Lambda function targets the current ASG-managed instance.</div>
+        <div id="result" class="result hidden" role="status"></div>
+      </article>
+
+      <article class="panel" id="architecture">
+        <div class="panel-title"><div><div class="eyebrow">SYSTEM FLOW</div><h2>Architecture</h2></div></div>
+        <div class="flow">
+          <div class="flow-node"><span>▣</span><b>Website</b><small>Virtual button</small></div><i>→</i>
+          <div class="flow-node"><span>⌘</span><b>Backend</b><small>Secure AWS SDK</small></div><i>→</i>
+          <div class="flow-node"><span>λ</span><b>Lambda</b><small>Kill action</small></div><i>→</i>
+          <div class="flow-node"><span>▤</span><b>Auto Scaling</b><small>Replacement</small></div>
+        </div>
+        <div class="flow-foot"><span class="dot green"></span> CloudWatch provides monitoring; Auto Scaling handles replacement based on its desired capacity and health checks.</div>
+      </article>
+    </section>
+
+    <section class="panel" id="activity">
+      <div class="panel-title"><div><div class="eyebrow">LIVE AWS READS + LOCAL ACTION LOG</div><h2>Activity & instance details</h2></div><button class="secondary" onclick="clearLogs()">Clear logs</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Instance ID</th><th>EC2 state</th><th>ASG lifecycle</th><th>Health</th><th>Type / AZ</th></tr></thead><tbody id="instances-table"><tr><td colspan="5">Loading from AWS…</td></tr></tbody></table></div>
+      <div class="logs" id="logs"><div class="log-row"><span class="log-time">READY</span><span class="log-info">Dashboard started. AWS data will appear after credentials are configured.</span></div></div>
+    </section>
+    <footer>Chaos Engineering Kill Switch · Local development · AWS SDK calls are made by the backend, not the browser.</footer>
+  </main>
+
+  <dialog id="confirm-dialog">
+    <form method="dialog" class="dialog-inner" onsubmit="return false">
+      <div class="icon red">ϟ</div><h2>Confirm real AWS action</h2>
+      <p>This will invoke <code>chaos-kill-switch</code>. Depending on its code, an EC2 instance may be stopped or terminated. The ASG may launch a replacement.</p>
+      <label for="confirm-text">Type <b>TRIGGER KILL SWITCH</b> to confirm</label>
+      <input id="confirm-text" autocomplete="off" placeholder="TRIGGER KILL SWITCH">
+      <div class="dialog-actions"><button class="secondary" type="button" onclick="closeConfirm()">Cancel</button><button class="danger-button" type="button" onclick="triggerKillSwitch()">Invoke Lambda</button></div>
+    </form>
+  </dialog>
+  <script src="/static/app.js"></script>
+</body>
+</html>
