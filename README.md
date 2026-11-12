@@ -1,3 +1,4 @@
+# chaos-Engineering-kill-switch
 # Chaos Engineering Kill Switch Website
 
 A local dashboard that reads live Auto Scaling Group, EC2 instance, and CloudWatch alarm data from AWS. The virtual switch invokes the existing Lambda function after a typed confirmation.
